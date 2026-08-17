@@ -152,6 +152,8 @@ cython_debug/
 
 # Specific
 data/
+figures/
+docs/
 
 # ---- dirty-mkt-data project specifics ----
 venv/
