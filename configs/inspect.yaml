@@ -1,0 +1,35 @@
+# GBM OHLCV inspection config.
+# All generator / OHLCV / figure parameters live here; CLI flags override.
+
+generator:
+  model: gbm              # one of: gbm (regimes/garch arrive in P1)
+  n_steps: 100            # time bars (candles)
+  n_paths: 1
+  seed: 42
+  path: 0                 # which generated path to render
+  params:
+    s0: 100.0
+    sigma: 0.25
+    dt_days: 252          # bars per year -> dt = 1/dt_days
+    mu: null              # explicit drift; if null, falls back to log-martingale
+    log_martingale_mu: true   # mu = 0.5 * sigma^2 (zero conditional expected return)
+
+ohlcv:
+  base_volume: 1000000
+  exc_scaling: 1.2        # within-bar high/low excursion multiplier
+  vol_noise: 0.15         # volume log-noise sigma
+  key_seed_offset: 1      # MLX stream key = seed + offset (independent of price stream)
+
+viz:
+  title_prefix: "GBM"
+  themes: [ghibli, synthwave, valorant]   # palette names from viz/themes.py
+  font: "JetBrains Mono"
+  width: 1366
+  height: 820
+  png:
+    enabled: true
+    scale: 2.0
+  html:
+    enabled: false
+  out_dir: "figures/n100"   # relative to repo root
+  open_after: false

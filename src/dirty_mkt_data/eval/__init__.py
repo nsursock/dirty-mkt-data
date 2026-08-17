@@ -1,0 +1,1 @@
+"""eval package: shared statistical / validation framework (MLX only)."""

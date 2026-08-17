@@ -1,0 +1,1 @@
+"""core package: price-dynamics generators (GBM, GARCH, regimes, jumps)."""
