@@ -17,3 +17,4 @@ Reference Issue Tracking: Link relevant issue numbers or pull request references
 
 Use only MLX: no numpy, no heavy python.
 Every python process launch should use venv/bin/python
+Be simple: less code possible.
