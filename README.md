@@ -18,8 +18,8 @@ testing, backtesting, and benchmarking — not a black-box simulator.
 
 ## Status
 
-All **P0** items are implemented and tested (41 tests green). See
-[Roadmap](#roadmap).
+All **P0** items and the **P1 AR(1) alpha-injection** model are implemented
+and tested (57 tests green). See [Roadmap](#roadmap).
 
 ## Setup
 
@@ -46,6 +46,23 @@ print(ds.prices.shape)   # (8, 2520)
 fitted = GBM().fit(ds.returns)
 ll = GBM(mu=0.0, sigma=0.2).log_likelihood(ds.returns)
 diag = GBM(sigma=0.2).diagnostics(ds)   # mean/std/skewness/kurtosis/t-stat
+```
+
+### Injectable alpha: AR(1) log-returns
+
+`ARGBM` is a variance-preserving AR(1) wrapper on GBM: same per-step return
+variance as GBM for every `phi`, only the temporal structure changes.
+
+```python
+from dirty_mkt_data.core.argbm import ARGBM
+
+# momentum (phi > 0) or mean-reversion (phi < 0); phi = 0 == GBM exactly
+ds = Generator(ARGBM(mu=0.0, sigma=0.2, phi=0.5), seed=42).sample(2520, n_paths=8)
+diag = ARGBM(sigma=0.2, phi=0.5).diagnostics(ds)   # ... + lag-1 "ar1" ~ phi
+
+# calibrate (Yule-Walker) and evaluate the AR(1) model against a series
+fitted = ARGBM(phi=0.5).fit(ds.returns)
+ll = ARGBM(phi=0.5).log_likelihood(ds.returns)     # conditional AR(1) + stationary init
 ```
 
 ### Render OHLCV charts
@@ -75,6 +92,7 @@ src/dirty_mkt_data/
     generator.py    # Generator: composes model (+ optional contamination)
   core/
     gbm.py          # GBM — null-model control (done, P0)
+    argbm.py        # ARGBM — variance-preserving AR(1) alpha injection (done, P1)
     garch.py        # GARCH(1,1)/EGARCH/GJR — P1
     regimes.py      # Markov regime-switching (8-regime port) — P1
     jumps.py        # Poisson/Hawkes jump-diffusion — P2
@@ -113,6 +131,7 @@ Verified by an in-process test and a cross-process (subprocess) test.
 | **P0** | GBM-as-control: naive TA finds no edge on GBM | ✅ done |
 | **P0** | Common `Model` interface (fit/sample/log_likelihood/diagnostics) | ✅ done |
 | **P0** | Stylized-facts validation framework | ✅ done |
+| **P1** | AR(1) log-returns (ARGBM, variance-preserving injectable alpha) | ✅ done |
 | **P1** | GARCH(1,1) with volatility clustering | 🔜 next |
 | **P1** | Markov regime-switching (8-regime, port from iso-trading-bot) | ⬜ |
 | **P1** | GARCH + regime composition | ⬜ |
@@ -129,15 +148,15 @@ Verified by an in-process test and a cross-process (subprocess) test.
 | **P3** | Downstream ML/RL validation (TCN/LSTM/Transformer, agents) | ⬜ |
 
 The null-model control is a design cornerstone: any strategy that earns an
-edge on pure GBM output is broken, full stop. Real dynamics (GARCH + regimes,
-P1+) should legitimately break that null — that is the falsification making
-the benchmark meaningful.
+edge on pure GBM output is broken, full stop. Real dynamics (ARGBM now,
+GARCH + regimes later) should legitimately break that null — that is the
+falsification making the benchmark meaningful.
 
 ## Tests
 
 ```bash
-venv/bin/python -m pytest        # 41 tests: seed contract, GBM stats/control,
-                                 # model interface, stylized facts, OHLCV
+venv/bin/python -m pytest        # 57 tests: seed contract, GBM stats/control,
+                                 # ARGBM AR(1), model interface, stylized facts, OHLCV
 ```
 
 ## Layout
